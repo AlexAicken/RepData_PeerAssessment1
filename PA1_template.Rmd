@@ -1,25 +1,139 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
+title: "Course Project 1"
+output:
   html_document:
-    keep_md: true
+    keep_md: yes
+  pdf_document: default
 ---
 
+# RepData - Peer Assignment 1
 
-## Loading and preprocessing the data
+## Overview
+This analysis looks at the number of steps per day from wearable devices - see README.MD in the github repo for more information  
+
+## Load libraries
+
+Libraries needed for analysis  
+
+```{r libraries, echo=TRUE}
+library(plyr)
+library(Hmisc)
+library(lattice)
+setwd("C:/Users/Alex/Documents/KNITR")
+```
+
+## Read in CSV data
+
+Data downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip  
+Data unzipped and loaded from directory below  
+
+```{r readdata, echo=TRUE}
+dataActivity <- read.csv("activity.csv", header=TRUE)
+```
+
+## Histogram of Number of Steps per Day
+
+Work out sum of steps for each date - plot on histogram  
+
+```{r stepsperday, echo=TRUE}
+stepsPerDay <- aggregate(steps~date,data=dataActivity, sum)
+hist(x=stepsPerDay$steps, xlab="Steps per Day", main="Histogram of Steps per Day")
+```
+
+## Calculation of Mean and Median Steps
+
+Calculate the mean, median and total steps per day  
+
+```{r meanmedian, echo=TRUE}
+meanSteps <- mean(stepsPerDay$steps)
+medianSteps <- median(stepsPerDay$steps)
+totalSteps <- sum(stepsPerDay$steps)
+```
+The mean steps per day is `r meanSteps`  
+The median steps per day is `r medianSteps`  
+The total number of steps per day is `r totalSteps`  
+
+## Plot of Steps per Interval  
+
+Calculate and plot the average steps per interval  
+
+```{r stepsperinterval, echo=TRUE}
+stepsPerInterval <- aggregate(steps~interval,data=dataActivity, FUN=mean)
+plot(steps ~ interval, xlab="Interval", ylab="Steps", main="Average Steps per Interval", data=stepsPerInterval, type="l")
+```
+
+## Interval that contains the maximum number of steps  
+
+Find the interval with the maximum number of steps  
+
+```{r intervalmaxsteps, echo=TRUE}
+intervalMaxSteps <- stepsPerInterval[stepsPerInterval$steps >= max(stepsPerInterval$steps), 1]
+```
+The interval with the max steps is `r intervalMaxSteps`
+
+## Number of NAs  
+
+Calculate the number of records with NA in the data  
+
+```{r numberofNAs, echo=TRUE}
+numberOfNAs <- sum(is.na(dataActivity$steps))
+```
+The number of NAs in the data is `r numberOfNAs`
+
+## Impute on NAs - Create new Imputed data set for NAs
+
+Save the mean when there is an NA - use impute function to do this
+
+```{r ImputeonNAs, echo=TRUE}
+dataActivityImputed <- dataActivity
+dataActivityImputed$stepsImputed <- with(dataActivity,impute(dataActivity$steps, mean))
+dataActivityImputed$steps <- dataActivityImputed$stepsImputed
+```
+
+## Make new histogram off Imputed data set
+
+calculate and plot the __imputed__ steps per day
+
+```{r stepsperdayimpute, echo=TRUE}
+stepsPerDayImputed <- aggregate(steps~date,data=dataActivityImputed, sum)
+hist(x=stepsPerDayImputed$steps, xlab="Steps per Day", main="Histogram of Steps per Day, with Imputed Values")
+```  
+Note that this looks very close to previous plot with NAs
+
+## Mean and Median on Imputed data set - Comparison
+
+Calculate the mean, median and total steps
+
+```{r meanmedianimputed, echo=TRUE}
+meanStepsImputed <- mean(stepsPerDayImputed$steps)
+medianStepsImputed <- median(stepsPerDayImputed$steps)
+totalStepsImputed <- sum(stepsPerDayImputed$steps)
+```  
+
+## Comparing the results  
+__Mean data the same__  
+Mean Imputed Data `r meanStepsImputed`, Mean Non-imputed Data `r meanSteps`  
+__Median data increased slightly__  
+Median Imputed Data `r medianStepsImputed`, Median Non-imputed Data `r medianSteps`  
+__Total steps increased significantly__  
+Total Steps Imputed Data `r totalStepsImputed`, Total Steps Non-imputed Data `r totalSteps`  
 
 
+# Add Weekday and Weekend Indicators
 
-## What is mean total number of steps taken per day?
+Add weekday, weekend indicators
 
+```{r weekdayindicator, echo=TRUE}
+dataActivityImputed$Weekday <- weekdays(as.Date(dataActivityImputed$date))
+dataActivityImputed$IsWeekend <- grepl('Saturday|Sunday', dataActivityImputed$Weekday)
+dataActivityImputed$IsWeekday <- !grepl('Saturday|Sunday', dataActivityImputed$Weekday)
+dataActivityImputed$WeekdayStatus <- ifelse(dataActivityImputed$IsWeekday==TRUE,"weekday","weekend")
+```
 
+# Panel plot - Weekday Steps vs Weekend Steps
+Panel plot the average number of steps per interval, splitting by whether it is a weekend or a weekday  
 
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+```{r weekdaysteps, echo=TRUE}
+stepsPerIntervalImputed <- aggregate(steps ~ interval + WeekdayStatus,data=dataActivityImputed, FUN=sum)
+xyplot(steps~interval|factor(WeekdayStatus),type="l",layout=c(1,2), xlab="Interval",ylab="Number of Steps", data=stepsPerIntervalImputed)
+```

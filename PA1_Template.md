@@ -73,7 +73,7 @@ stepsPerDay <- aggregate(steps~date,data=dataActivity, sum)
 hist(x=stepsPerDay$steps, xlab="Steps per Day", main="Histogram of Steps per Day")
 ```
 
-![](PA1_Template_files/figure-html/stepsperday-1.png)<!-- -->
+![plot1](figure/stepsperday-1.png)<!-- -->
 
 ## Calculation of Mean and Median Steps
 
@@ -99,7 +99,7 @@ stepsPerInterval <- aggregate(steps~interval,data=dataActivity, FUN=mean)
 plot(steps ~ interval, xlab="Interval", ylab="Steps", main="Average Steps per Interval", data=stepsPerInterval, type="l")
 ```
 
-![](PA1_Template_files/figure-html/stepsperinterval-1.png)<!-- -->
+![plot2](figure/stepsperinterval-1.png)<!-- -->
 
 ## Interval that contains the maximum number of steps  
 
@@ -142,7 +142,7 @@ stepsPerDayImputed <- aggregate(steps~date,data=dataActivityImputed, sum)
 hist(x=stepsPerDayImputed$steps, xlab="Steps per Day", main="Histogram of Steps per Day, with Imputed Values")
 ```
 
-![](PA1_Template_files/figure-html/stepsperdayimpute-1.png)<!-- -->
+![plot3](figure/stepsperdayimpute-1.png)<!-- -->
 Note that this looks very close to previous plot with NAs
 
 ## Mean and Median on Imputed data set - Comparison
@@ -186,4 +186,4 @@ stepsPerIntervalImputed <- aggregate(steps ~ interval + WeekdayStatus,data=dataA
 xyplot(steps~interval|factor(WeekdayStatus),type="l",layout=c(1,2), xlab="Interval",ylab="Number of Steps", data=stepsPerIntervalImputed)
 ```
 
-![](PA1_Template_files/figure-html/weekdaysteps-1.png)<!-- -->
+![plot4](figure/weekdaysteps-1.png)<!-- -->
